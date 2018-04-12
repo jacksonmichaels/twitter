@@ -1,0 +1,9 @@
+#sign_div {
+  border-style: solid;
+  border-color: red;
+  width: 20%;
+  text-align: center;
+  position: absolute;
+  left: 40%;
+  top: 40%;
+}
