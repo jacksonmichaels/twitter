@@ -1,37 +1,12 @@
 <?php
-$servername = "localhost";
-$username = "jackson";
-$password = "root";
-$database = "twitter";
+Include 'global.php';
+$uname = "Lacie";
+$pwd = "123456";
 
-// Create connection
-$db = new mysqli($servername, $username, $password, $database);
-
-// Check connection
-if ($db->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-function check_user($username, $pwd) {
-    $sql = $db->prepare("SELECT * from users where uname = ? and upass = ?;");
-
-    $sql->bind_param("ss", $uname, $upass);
-
-    $uname = $username;
-
-    $upass = $pwd;
-
-    $results = $sql->exicute();
-
-    if (count($results) != 1)
-    {
-      header("Location: index.php?status=1"); /* Redirect browser */
-    }
-}
-
-
-if (isset($_POST) && isset($_POST['uname'] && isset($_POST['pwd']))){
+if (isset($_POST) && isset($_POST['uname']) && isset($_POST['pwd'])){
   check_user($_POST['uname'], $_POST['pwd']);
 }
+
 ?>
 
  <!DOCTYPE html>
@@ -42,7 +17,9 @@ if (isset($_POST) && isset($_POST['uname'] && isset($_POST['pwd']))){
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<!-- jQuery -->
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="css/style.css">
+
   </head>
 	<body>
 
@@ -70,17 +47,25 @@ if (isset($_POST) && isset($_POST['uname'] && isset($_POST['pwd']))){
   </head>
   <body>
     <?php
-      echo "<table>";
-      echo "<tr><th>ID</th><th>Username</th><th>Password</th></tr>";
-
-      while($row = mysqli_fetch_array($result)) {
-          $id = $row['uid'];
-          $uname = $row['uname'];
-          $upass = $row['upass'];
-          echo "<tr><td>".$id."</td><td>".$uname."</td><td>".$upass."</td></tr>";
+      $feed = getFeed($uname);
+      $i = 0;
+      echo '<div class="container">';
+      echo "<div class = row>";
+      foreach($feed as $val) {
+        $user = $val['uname'];
+        $tweet = $val['t_text'];
+        $date = $val['t_date'];
+        if ($i % 3 == 0 && $i != 0){
+          echo "</div>";
+          echo "<div class = row>";
+        }
+        echo "<div class = col>";
+        $html_block = constTweetBlock($user, $tweet, $date);
+        echo $html_block;
+        echo "</div>";
+        $i += 1;
       }
-
-      echo "</table>";
+      echo "</div>";
     ?>
   </body>
  </html>
