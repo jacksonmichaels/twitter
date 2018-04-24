@@ -58,32 +58,41 @@ function getUid($user) {
 function getFeed($user) {
   $uid = getUid($user);
   $query = '
-  select uname, t_text, t_date, t.tid as "tid"
-	from tweets t join
-		(select followed_id from followers where follower_id = 1) a on t.uid = a.followed_id
-			join users u on u.uid = a.followed_id
+  select uname,  NULL as "r_name", t_text, t_date, t.tid as "tid"
+  	from tweets t join
+  		(select followed_id from followers where follower_id = '.$uid.') a on t.uid = a.followed_id
+  			join users u on u.uid = a.followed_id
   union
-  	select uname, t_text, r.t_date, t.tid as "tid"
-  		from retweets r join (select followed_id from followers where follower_id = 1) a on r.uid = a.followed_id
-  			join tweets t on r.tid = t.tid
-  				join users u on u.uid = r.uid
-  		order by t_date;';
+  select u.uname, ur.uname, t.t_text, r.t_date, r.tid as "tid"
+    from retweets r join
+      (select followed_id from followers where follower_id = '.$uid.') f on f.followed_id = r.uid
+    		join tweets t on t.tid = r.tid
+    			join users u on r.uid = u.uid
+    				join users ur on ur.uid = t.uid
+    		order by t_date;';
   $result = $GLOBALS['db']->query($query);
   $return_val =  resultToArray($result);
   $result->close();
   return $return_val;
 }
 
-function constTweetBlock($user, $text, $date, $tid, $liked){
+function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
   if ($liked == 1){
     $act = "unlike";
   } else {
     $act = "like";
   }
+
+  if ($rt_name) {
+    $rt_message = "Retweet from: ".$rt_name;
+  } else {
+    $rt_message = '';
+  }
   $html = '
     <div class="w3-card-4 tweet_card" id="tweet_'.$tid.'">
       <header class="w3-container w3-blue">
-        <h1>'.$user.'</h1>
+        <h1 style="display:inline">'.$user.' '.$tid.'</h1>
+        <h2 style="display:inline" class="tweet_like">'.$rt_message.'</h2>
       </header>
 
       <div class="w3-container">
@@ -92,7 +101,7 @@ function constTweetBlock($user, $text, $date, $tid, $liked){
 
       <footer class="w3-container w3-blue">
         '.$date.'
-        <form target="act_frame" action="/actions.php" method="post" class="tweet_like">
+        <form action="home_page.php" method="post" class="tweet_like">
            <input type="hidden" name="act" value="'.$act.'" />
            <input type="hidden" name="tid" value="'.$tid.'" />
            <input type="submit" value="'.$act.'">

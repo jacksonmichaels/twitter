@@ -43,6 +43,7 @@
 .tweet_like {
   float: right;
   color: black;
+  text-align: right;
 }
 
 footer {

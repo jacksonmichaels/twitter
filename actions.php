@@ -1,21 +1,25 @@
 <?php
+$word = "none";
 Include 'global.php';
 function like_tweet($uid, $tid){
+  $word = $uid;
   $sql = 'insert into likes values('.$tid.','.$uid.');';
-  $GLOBALS['db']->query($sql);
+  $success = $GLOBALS['db']->query($sql);
+
 }
 
 function unlike_tweet($uid, $tid){
   $sql = 'delete from likes where (tweets_tid = '.$tid.' and users_uid = '.$uid.');';
-  $GLOBALS['db']->query($sql);
+  $success = $GLOBALS['db']->query($sql);
+  $word = $success;
 }
 
 
-if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
-  if ($_POST['act'] = "like"){
-    like_tweet($_SESSION['uid'], $_POST['tid']);
-  } else if ($_POST['act'] = "unlike"){
-    unlike_tweet($_SESSION['uid'], $_POST['tid']);
+if (isset($_GET) && isset($_GET['act']) && isset($_GET['tid'])){
+  if ($_GET['act'] == "like"){
+    like_tweet($_SESSION['uid'], $_GET['tid']);
+  } else if ($_GET['act'] == "unlike"){
+    unlike_tweet($_SESSION['uid'], $_GET['tid']);
   }
 }
  ?>
@@ -29,8 +33,9 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
 
 <body>
 <?php
-  echo $_POST['act'];
-  echo $_POST['tid'];
+  echo $_GET['act'] == "like";
+  //echo $_GET['tid'];
+  echo $word;
  ?>
 
  <script>
