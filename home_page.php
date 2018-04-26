@@ -1,4 +1,18 @@
 <?php
+
+/*
+TODO:
+  Tweet [done]
+  Delete your tweet
+  follow user
+  stop following user
+  see liked tweets
+  see all users i am following
+  see all users following me
+  how many likes per tweet
+  how many retweets per tweet
+  how many users i am following
+*/
 Include 'global.php';
 
 if (isset($_POST) && isset($_POST['uname']) && isset($_POST['pwd'])){
@@ -9,16 +23,14 @@ if (isset($_POST) && isset($_POST['uname']) && isset($_POST['pwd'])){
 }
 
 function like_tweet($uid, $tid){
-  $word = $uid;
   $sql = 'insert into likes values('.$tid.','.$uid.');';
-  $success = $GLOBALS['db']->query($sql);
+  $GLOBALS['db']->query($sql);
 
 }
 
 function unlike_tweet($uid, $tid){
   $sql = 'delete from likes where (tweets_tid = '.$tid.' and users_uid = '.$uid.');';
-  $success = $GLOBALS['db']->query($sql);
-  $word = $success;
+  $GLOBALS['db']->query($sql);
 }
 
 
@@ -27,6 +39,8 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
     like_tweet($_SESSION['uid'], $_POST['tid']);
   } else if ($_POST['act'] == "unlike"){
     unlike_tweet($_SESSION['uid'], $_POST['tid']);
+  } else if ($_POST['act'] == "delete") {
+    $worked = delete_tweet($_POST['tid']);
   }
 }
 
@@ -36,27 +50,39 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
  <html>
 	<head>
     <title>PHP Test</title>
-
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<!-- jQuery -->
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="css/style.css">
-
   </head>
   <body>
-    <div id = "head">
-      <h1>Twitter Clone</h1>
-    </div>
+    <nav class="navbar navbar-default" id = "head">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Twitter Clone</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li><a href="#" id = "tweet_button">Tweet</a></li>
+          <li><a href="#" id = "find_user_button">Find User</a></li>
+          <li><a href="#" id = "liked_tweets_button">Liked Tweets</a></li>
+          <li><a href="#" id = "user_info_button">User Information</a></li>
+        </ul>
+      </div>
+    </nav>
 
     <div id = "user_panel">
       <header>
-        Username: <?php echo $_SESSION['username']; ?>
+        Username: <?php echo $_SESSION['username'];
+                    echo $_POST['act'];
+                    echo $_POST['tid'];?>
       </header>
       <div>
         Followers: <?php  echo num_followers($_SESSION['username']); ?>
         <br>
         Likes: <?php echo num_likes($_SESSION['username']); ?>
+        <br>
+        UID: <?php echo $_SESSION['uid'] ?>
       </div>
     </div>
 
@@ -75,10 +101,6 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
             $tid = $val['tid'];
             $liked = check_liked($_SESSION['uid'], $tid);
             $rt_name = $val['r_name'];
-            if ($i % 3 == 0 && $i != 0){
-              echo "</div>";
-              echo "<div class = row>";
-            }
             $html_block = constTweetBlock($user, $tweet, $date, $tid, $liked, $rt_name);
             echo $html_block;
             $i += 1;
@@ -86,6 +108,17 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
           ?>
       </div>
     </div>
+    <script>
+      $("#tweet_button").click(function(){
+          $("#make_tweet_frame").toggle();
+      });
+
+
+    </script>
+    <iframe src="navbar_pages/make_tweet.php" id = "make_tweet_frame"></iframe>
+    <iframe src="navbar_pages/my_info.php" id = "info_frame"></iframe>
+    <iframe src="navbar_pages/my_likes.php" id = "likes_frame"></iframe>
+    <iframe src="navbar_pages/search_users.php" id = "users_frame"></iframe>
 
   </body>
  </html>

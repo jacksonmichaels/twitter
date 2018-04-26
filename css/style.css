@@ -16,7 +16,6 @@
 #head {
   text-align: center;
   background-color: black;
-  height: 10vh;
   width: 100%;
   position:absolute;
   color: white;
@@ -48,4 +47,13 @@
 
 footer {
   font-size: 15px;
+}
+
+iframe {
+  position: fixed; /* or absolute */
+  top: 17vh;
+  left: 25%;
+  width: 50%;
+  height: 40vh;
+  display: none;
 }

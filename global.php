@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 $DB_CON = array(
 "server_name" => "localhost",
 "username" => "jackson",
@@ -63,13 +65,18 @@ function getFeed($user) {
   		(select followed_id from followers where follower_id = '.$uid.') a on t.uid = a.followed_id
   			join users u on u.uid = a.followed_id
   union
+  select uname,  NULL as "r_name", t_text, t_date, t.tid as "tid"
+  	from tweets t
+  			join users u on u.uid = t.uid
+          where u.uid = '.$_SESSION['uid'].'
+  union
   select u.uname, ur.uname, t.t_text, r.t_date, r.tid as "tid"
     from retweets r join
       (select followed_id from followers where follower_id = '.$uid.') f on f.followed_id = r.uid
     		join tweets t on t.tid = r.tid
     			join users u on r.uid = u.uid
     				join users ur on ur.uid = t.uid
-    		order by t_date;';
+    		order by t_date desc;';
   $result = $GLOBALS['db']->query($query);
   $return_val =  resultToArray($result);
   $result->close();
@@ -87,6 +94,18 @@ function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
     $rt_message = "Retweet from: ".$rt_name;
   } else {
     $rt_message = '';
+  }
+
+  if ($user == $_SESSION['username']){
+    $delete_button = '
+    <form action="home_page.php" method="post" class="tweet_like">
+       <input type="hidden" name="act" value="delete" />
+       <input type="hidden" name="tid" value="'.$tid.'" />
+       <input type="submit" value="delete">
+    </form>
+    ';
+  } else {
+    $delete_button = "";
   }
   $html = '
     <div class="w3-card-4 tweet_card" id="tweet_'.$tid.'">
@@ -106,10 +125,25 @@ function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
            <input type="hidden" name="tid" value="'.$tid.'" />
            <input type="submit" value="'.$act.'">
         </form>
+        '.  $delete_button.'
       </footer>
     </div>
     <br>';
   return $html;
+}
+
+function send_tweet($text) {
+  $sql = 'insert into tweets (t_date, t_text, uid) values(NOW(),"'.$text.'",'.$_SESSION["uid"].');';
+  $GLOBALS['db']->query($sql);
+}
+
+function delete_tweet($tid) {
+  $sql = 'delete from likes where tweets_tid = '.$tid.';
+          delete from retweets where tid = '.$tid.';
+          delete from tweets WHERE tid = '.$tid.';';
+  $message = $GLOBALS['db']->query($sql);
+
+  return $message;
 }
 
 function num_followers($uname) {
