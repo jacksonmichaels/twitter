@@ -1,0 +1,18 @@
+Here's how to run my front end.
+You might have your own local server software and if you do i bet it is similar
+but i used MAMP so that will be what these steps are for.
+1) install MAMP from https://www.mamp.info/en/downloads/
+2) copy my twitter file and its contents into the htdocs file inside MAMP
+3) open mamp and under preferences go to webserver and change the Document Root
+      to my twitter folder
+4) click "Open start page" and then under tools open phpmyadmin
+5) create a database named "twitter"
+5) add a user with the username "jackson" and password "root"
+    make sure to give that user full permissions
+6) refresh the page then on the left click the twitter database go to sql
+      then drag my "twitter_db.sql" file into the window, this should run my make file
+7) the project should now be ready to run, if you go to the users table you can see
+      all the username password pairs in plain text, any one of those will let  you log in
+
+if you have any questions email me
+(hope you like it i spent so many hours not knowing how php to sql worked)

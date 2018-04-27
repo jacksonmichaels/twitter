@@ -22,5 +22,12 @@ Include 'global.php';
       <br>
       <button type="submit">Login</button>
   </form>
+  <p style="position: absolute;left:40%;top:35%;color:red;">
+  <?php
+    if ($_GET['status'] == 1){
+      echo "That login does not exist, please try again";
+    }
+   ?>
+ </p>
 </body>
 </html>

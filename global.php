@@ -48,8 +48,7 @@ function getAssoc($query){
 }
 
 function getUid($user) {
-  $query = "select * from users where uname = ".$user.";";
-  if ($result = $GLOBALS['db']->query('SELECT uid FROM users WHERE uname = "root"')) {
+  if ($result = $GLOBALS['db']->query('SELECT uid FROM users WHERE uname = "'.$user.'"')) {
     $uid = $result->fetch_array(MYSQLI_ASSOC)['uid'];
     /* free result set */
     $result->close();
@@ -102,6 +101,18 @@ function getFeed($user) {
   $result->close();
   return $return_val;
 }
+function get_liked_tweets($uid){
+  $sql = '
+    select uname, t_text, t_date, t.tid as "tid"
+  	from tweets t join users u on t.uid = u.uid
+      	join likes l on l.tweets_tid = t.tid
+          	where l.users_uid = '.$uid.';';
+
+  $result = $GLOBALS['db']->query($sql);
+  $return_val =  resultToArray($result);
+  $result->close();
+  return $return_val;
+}
 
 function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
   if ($liked == 1){
@@ -109,6 +120,12 @@ function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
   } else {
     $act = "like";
   }
+
+  $likes = num_likes_tweet($tid);
+
+  $retweets = num_retweets_tweet($tid);
+
+  $page = basename($_SERVER['PHP_SELF']);
 
   if ($rt_name) {
     $rt_message = "Retweet from: ".$rt_name;
@@ -118,7 +135,7 @@ function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
 
   if ($user == $_SESSION['username']){
     $delete_button = '
-    <form action="home_page.php" method="post" class="tweet_like">
+    <form action="'.$page.'" method="post" class="tweet_like">
        <input type="hidden" name="act" value="delete" />
        <input type="hidden" name="tid" value="'.$tid.'" />
        <input type="submit" value="delete">
@@ -139,8 +156,8 @@ function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
       </div>
 
       <footer class="w3-container w3-blue">
-        '.$date.'
-        <form action="home_page.php" method="post" class="tweet_like">
+        '.$date.'      Likes: '.$likes.'      Retweeted '.$retweets.' times
+        <form action="'.$page.'" method="post" class="tweet_like">
            <input type="hidden" name="act" value="'.$act.'" />
            <input type="hidden" name="tid" value="'.$tid.'" />
            <input type="submit" value="'.$act.'">
@@ -157,23 +174,15 @@ function send_tweet($text) {
   $GLOBALS['db']->query($sql);
 }
 
-function follow($uid) {
-  $sql = 'insert into followers values('.$_SESSION['uid'].','.$uid.');';
-  $GLOBALS['db']->query($sql);
-}
-
-function unfollow($uid) {
-  $sql = 'delete from followers where followed_id = '.$uid.';';
-  $GLOBALS['db']->query($sql);
-}
-
-function delete_tweet($tid) {
-  $sql = 'delete from likes where tweets_tid = '.$tid.';
-          delete from retweets where tid = '.$tid.';
-          delete from tweets WHERE tid = '.$tid.';';
-  $message = $GLOBALS['db']->query($sql);
-
-  return $message;
+function num_following($uname) {
+  $uid =  getUid($uname);
+  $num = getAssoc(
+    'select count(*) as "num"
+    	from users u
+    		where u.uid in (
+    			select followed_id from followers where follower_id = "'.$uid.'");'
+    );
+    return $num['num'];
 }
 
 function num_followers($uname) {
@@ -182,16 +191,50 @@ function num_followers($uname) {
     'select count(*) as "num"
     	from users u
     		where u.uid in (
-    			select followed_id from followers where follower_id = "'.$uid.'");'
+    			select followed_id from followers where followed_id = "'.$uid.'");'
     );
-
     return $num['num'];
+}
+
+function get_following() {
+  $sql = 'select u.uname as "uname"
+          	from users u
+          		where u.uid in (
+          			select followed_id from followers where follower_id = '.$_SESSION['uid'].')';
+    $result = $GLOBALS['db']->query($sql);
+    return $result;
+}
+
+function get_followed() {
+  $query =
+    'select u.uname as "uname"
+    	from users u
+    		where u.uid in (
+    			select follower_id from followers where followed_id = '.$_SESSION['uid'].')';
+  $result = $GLOBALS['db']->query($query);
+  return $result;
 }
 
 function num_likes($uname) {
   $uid =  getUid($uname);
   $num = getAssoc(
     'select count(*) as "num" from tweets t join likes l on t.tid = l.tweets_tid join users u on t.uid = u.uid where u.uid = "'.$uid.'";'
+    );
+
+    return $num['num'];
+}
+
+function num_likes_tweet($tid){
+  $num = getAssoc(
+    'select count(*) as "num" from likes where tweets_tid = '.$tid.''
+    );
+
+    return $num['num'];
+}
+
+function num_retweets_tweet($tid){
+  $num = getAssoc(
+    'select count(*) as "num" from retweets where tid = '.$tid.''
     );
 
     return $num['num'];
