@@ -57,6 +57,26 @@ function getUid($user) {
   return $uid;
 }
 
+function check_following($other_user){
+  $sql = '
+  select count(*) as "num" from followers WHERE follower_id = '.$_SESSION['uid'].' and followed_id = '.$other_user.';
+  ';
+    if ($result = $GLOBALS['db']->query($sql)) {
+      $num = $result->fetch_array(MYSQLI_ASSOC)['num'];
+      /* free result set */
+      $result->close();
+    }
+    return $num;
+}
+
+function getUsers() {
+  $sql='select uname, uid from users;';
+  $result = $GLOBALS['db']->query($sql);
+  $return_val =  resultToArray($result);
+  $result->close();
+  return $return_val;
+}
+
 function getFeed($user) {
   $uid = getUid($user);
   $query = '
@@ -134,6 +154,16 @@ function constTweetBlock($user, $text, $date, $tid, $liked, $rt_name){
 
 function send_tweet($text) {
   $sql = 'insert into tweets (t_date, t_text, uid) values(NOW(),"'.$text.'",'.$_SESSION["uid"].');';
+  $GLOBALS['db']->query($sql);
+}
+
+function follow($uid) {
+  $sql = 'insert into followers values('.$_SESSION['uid'].','.$uid.');';
+  $GLOBALS['db']->query($sql);
+}
+
+function unfollow($uid) {
+  $sql = 'delete from followers where followed_id = '.$uid.';';
   $GLOBALS['db']->query($sql);
 }
 

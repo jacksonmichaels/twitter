@@ -3,9 +3,9 @@
 /*
 TODO:
   Tweet [done]
-  Delete your tweet
-  follow user
-  stop following user
+  Delete your tweet [still working on it]
+  follow user [done]
+  stop following user [still working on it]
   see liked tweets
   see all users i am following
   see all users following me
@@ -33,7 +33,7 @@ function unlike_tweet($uid, $tid){
   $GLOBALS['db']->query($sql);
 }
 
-
+$worked = "naaa man";
 if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
   if ($_POST['act'] == "like"){
     like_tweet($_SESSION['uid'], $_POST['tid']);
@@ -41,6 +41,8 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
     unlike_tweet($_SESSION['uid'], $_POST['tid']);
   } else if ($_POST['act'] == "delete") {
     $worked = delete_tweet($_POST['tid']);
+    $worked = "yeah man";
+
   }
 }
 
@@ -75,7 +77,8 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
       <header>
         Username: <?php echo $_SESSION['username'];
                     echo $_POST['act'];
-                    echo $_POST['tid'];?>
+                    echo $_POST['tid'];
+                    echo $worked?>
       </header>
       <div>
         Followers: <?php  echo num_followers($_SESSION['username']); ?>
@@ -111,6 +114,27 @@ if (isset($_POST) && isset($_POST['act']) && isset($_POST['tid'])){
     <script>
       $("#tweet_button").click(function(){
           $("#make_tweet_frame").toggle();
+          $("#info_frame").hide();
+          $("#likes_frame").hide();
+          $("#users_frame").hide();
+      });
+      $("#find_user_button").click(function(){
+        $("#make_tweet_frame").hide();
+        $("#info_frame").hide();
+        $("#likes_frame").hide();
+        $("#users_frame").toggle();
+      });
+      $("#liked_tweets_button").click(function(){
+        $("#make_tweet_frame").hide();
+        $("#info_frame").hide();
+        $("#likes_frame").toggle();
+        $("#users_frame").hide();
+      });
+      $("#user_info_button").click(function(){
+        $("#make_tweet_frame").hide();
+        $("#info_frame").toggle();
+        $("#likes_frame").hide();
+        $("#users_frame").hide();
       });
 
 
