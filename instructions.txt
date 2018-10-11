@@ -15,4 +15,4 @@ but i used MAMP so that will be what these steps are for.
       all the username password pairs in plain text, any one of those will let  you log in
 
 if you have any questions email me
-(hope you like it i spent so many hours not knowing how php to sql worked)
+(jackson@michaels.id)
